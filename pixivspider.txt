@@ -1,0 +1,54 @@
+import requests
+import re
+import urllib.request
+import os
+from urllib.request import urlretrieve
+from bs4 import BeautifulSoup
+import urllib
+import random
+import time
+
+url = 'https://www.pixiv.net/ranking.php?mode=daily'
+r = requests.get(url).text
+
+rese = re.compile(r'data-filter="thumbnail-filter lazy-image"data-src="(.+?\.jpg)"data-type')
+items = re.findall(rese, r)
+
+for item in items:  # 源图的url
+    # print (item)
+    surl0 = item.replace('c/240x480/img-master', 'img-original')
+    surl1 = surl0.replace('_master1200', '')
+    # print(surl1)#原图地址，记得加Referer
+
+    reference = "https://www.pixiv.net/member_illust.php?mode=medium&illust_id="
+    reg = r'.+/(\d+)_p0'
+    referID = re.findall(reg, item)  # id=后面的id
+    for i in referID:
+        RE = (reference + i)  # 每张图的refererce
+        # print(RE)
+
+    header = {
+        "Accept-Language": "zh-CN,zh;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"
+    }
+    header['referer'] = RE
+    # req = urllib.request.Request(surl1, headers=header)
+    # res = urllib.request.urlopen(req)
+    try:
+        req = urllib.request.Request(surl1, headers=header)
+        res = urllib.request.urlopen(req)
+    except urllib.error.HTTPError:
+        surl2 = surl1.replace('.jpg', '.png')
+        req = urllib.request.Request(surl2, headers=header)
+        res = urllib.request.urlopen(req)
+    RA = random.randint(1, 50)
+    local = 'F:\\npp.7.5.8.bin.x64\\test\\' + str(time.time()) + '.jpg'
+    data = res.read()
+    # print(data)
+
+    with open(local, 'wb') as img:
+        img.write(data)
+    
+
+
+
